@@ -55,4 +55,4 @@ outputs:
     description: Conclusion of the job, i.e pass/failure
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/step-security/trigger-workflow-and-wait:v1.6.7@sha256:44f1c6d37b9d8214b1c7b83c909ad77aec6defe871313154dce0dfbce7462c48' #v1.6.7
+  image: 'docker://ghcr.io/step-security/trigger-workflow-and-wait:v1.6.7@sha256:044644b189336f77e1de4b8a73b173058f2dd80aaf17a3a03b0c3fcacc02e8b1' #v1.6.7
