@@ -16,25 +16,28 @@ echo -e "\033[36mLearn more:\033[0m $DOCS_URL"
 echo ""
 
 if [ "$REPO_PRIVATE" != "false" ]; then
-  SERVER_URL="${GITHUB_SERVER_URL:-https://github.com}"
+  # NOTE: variables in this block are namespaced (SUB_*) so they don't leak
+  # into the upstream's `${API_URL:-...}` / `${SERVER_URL:-...}` overrides
+  # used by the GITHUB_API_URL/GITHUB_SERVER_URL fallbacks further down.
+  SUB_SERVER_URL="${GITHUB_SERVER_URL:-https://github.com}"
 
-  if [ "$SERVER_URL" != "https://github.com" ]; then
-    BODY=$(printf '{"action":"%s","ghes_server":"%s"}' "$ACTION_REPO" "$SERVER_URL")
+  if [ "$SUB_SERVER_URL" != "https://github.com" ]; then
+    SUB_BODY=$(printf '{"action":"%s","ghes_server":"%s"}' "$ACTION_REPO" "$SUB_SERVER_URL")
   else
-    BODY=$(printf '{"action":"%s"}' "$ACTION_REPO")
+    SUB_BODY=$(printf '{"action":"%s"}' "$ACTION_REPO")
   fi
 
-  API_URL="https://agent.api.stepsecurity.io/v1/github/$GITHUB_REPOSITORY/actions/maintained-actions-subscription"
+  SUB_API_URL="https://agent.api.stepsecurity.io/v1/github/$GITHUB_REPOSITORY/actions/maintained-actions-subscription"
 
-  RESPONSE=$(curl --max-time 3 -s -w "%{http_code}" \
+  SUB_RESPONSE=$(curl --max-time 3 -s -w "%{http_code}" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d "$BODY" \
-    "$API_URL" -o /dev/null) && CURL_EXIT_CODE=0 || CURL_EXIT_CODE=$?
+    -d "$SUB_BODY" \
+    "$SUB_API_URL" -o /dev/null) && SUB_CURL_EXIT_CODE=0 || SUB_CURL_EXIT_CODE=$?
 
-  if [ $CURL_EXIT_CODE -ne 0 ]; then
+  if [ $SUB_CURL_EXIT_CODE -ne 0 ]; then
     echo "Timeout or API not reachable. Continuing to next step."
-  elif [ "$RESPONSE" = "403" ]; then
+  elif [ "$SUB_RESPONSE" = "403" ]; then
     echo -e "::error::\033[1;31mThis action requires a StepSecurity subscription for private repositories.\033[0m"
     echo -e "::error::\033[31mLearn how to enable a subscription: $DOCS_URL\033[0m"
     exit 1
